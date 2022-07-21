@@ -69,20 +69,17 @@ class TritonPythonModel:
           A list of pb_utils.InferenceResponse. The length of this list must
           be the same as `requests`
         """
-
-        output0_dtype = self.output0_dtype
-
         responses = []
 
         # Every Python backend must iterate over everyone of the requests
         # and create a pb_utils.InferenceResponse for each of them.
         for request in requests:
-            ## FIT THE CODE HERE TO WORK PROPERLY 
-            ## WE REALLY WANT THIS TO WORK GREEAT
-            continue
-
-        # You should return a list of pb_utils.InferenceResponse. Length
-        # of this list must match the length of `requests` list.
+            in_0 = pb_utils.get_input_tensor_by_name(request, "INPUT_0")
+            img = in_0.as_numpy()
+            out_tensor_0 = pb_utils.Tensor("OUTPUT_0", img.astype(self.output0_dtype))
+            inference_response = pb_utils.InferenceResponse(
+                output_tensors=[out_tensor_0])
+            responses.append(inference_response)
 
         return responses
 
