@@ -249,29 +249,32 @@ Run onnx_exporter.py to convert ResNet50 PyTorch model to ONNX format. Width and
 
 ```bash
     mkdir -p model_repository/ensemble_python_resnet50/1
-    mkdir -p model_repository/preprocess/1
-    mkdir -p model_repository/postprocess/1
+    mkdir -p model_repository/preprocessing/1
+    mkdir -p model_repository/postprocessing/1
     mkdir -p model_repository/resnet50_trt/1
     
     # Copy the Python model
-    cp preprocessing.py model_repository/preprocess/1/model.py
-    cp postprocessing.py model_repository/postprocess/1/model.py
+    cp preprocessing.py model_repository/preprocessing/1/model.py
+    cp postprocessing.py model_repository/postprocessing/1/model.py
 ```
 
 **3. Build a TensorRT engine for the ONNX model**
 
 Set the arguments for enabling fp16 precision --fp16. To enable dynamic shapes use --minShapes, --optShapes, and maxShapes with --explicitBatch:
 
-    $ trtexec --onnx=model.onnx --saveEngine=./model_repository/resnet50_trt/1/model.plan --explicitBatch --minShapes=input:1x3x224x224 --optShapes=input:1x3x224x224 --maxShapes=input:256x3x224x224 --fp16
-
+```bash
+    trtexec --onnx=model.onnx --saveEngine=./model_repository/resnet50_trt/1/model.plan --explicitBatch --minShapes=input:1x3x224x224 --optShapes=input:1x3x224x224 --maxShapes=input:256x3x224x224 --fp16
+```
 **4. Run the command below to start the server container:**
 
 Under model_repository, run this command to start the server docker container:
-
-    $ docker run --gpus=all -it --rm -p8000:8000 -p8001:8001 -p8002:8002 -v$(pwd):/workspace/ -v/$(pwd)/model_repository:/models nvcr.io/nvidia/tritonserver:xx.yy-py3 bash
-    $ pip install numpy pillow torchvision
-    $ tritonserver --model-repository=/models
-     
+    
+-- Why do we do this again? Just to this onece with the ports and life would be easier ...
+```bash
+    docker run --runtime=nvidia -it --rm -p8000:8000 -p8001:8001 -p8002:8002 -v$(pwd):/workspace/ -v/$(pwd)/model_repository:/models nvcr.io/nvidia/tritonserver:22.06-py3 bash
+    pip install numpy pillow torchvision
+    tritonserver --model-repository=/models
+```
 **5. Start the client to test:**
 
 Under python_backend/examples/resnet50_trt, run the commands below to start the client Docker container:
