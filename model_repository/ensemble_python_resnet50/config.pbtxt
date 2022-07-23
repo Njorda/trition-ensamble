@@ -25,7 +25,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-name: "ensamble"
+name: "ensemble_python_resnet50"
 platform: "ensemble"
 max_batch_size: 256
 input [
@@ -45,7 +45,7 @@ output [
 ensemble_scheduling {
   step [
     {
-      model_name: "preprocess"
+      model_name: "preprocessing"
       model_version: -1 # This will give the latest version
       input_map {
         key: "INPUT_0"
@@ -65,15 +65,15 @@ ensemble_scheduling {
       }
       output_map {
         key: "output"
-        value: "processed_image"
+        value: "OUTPUT"
       }
     },
     {
-      model_name: "postprocess"
+      model_name: "postprocessing"
       model_version: -1 # This will give the latest version
       input_map {
         key: "INPUT_0"
-        value: "output"
+        value: "OUTPUT"
       }
       output_map {
         key: "OUTPUT_0"
