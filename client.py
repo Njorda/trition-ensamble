@@ -81,7 +81,7 @@ if __name__ == "__main__":
     inputs = []
     outputs = []
     input_name = "INPUT"
-    output_name = "OUTPUT"
+    output_name = "PREDICTION"
     image_data = load_image(args.image)
     image_data = np.expand_dims(image_data, axis=0)
 

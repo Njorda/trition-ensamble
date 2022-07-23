@@ -37,7 +37,7 @@ input [
 ]
 output [
   {
-    name: "OUTPUT"
+    name: "PREDICTION"
     data_type: TYPE_FP32
     dims: [ 1000 ]
   }
@@ -73,11 +73,11 @@ ensemble_scheduling {
       model_version: -1 # This will give the latest version
       input_map {
         key: "INPUT_0"
-        value: "processed_image"
+        value: "output"
       }
       output_map {
-        key: "OUTPUT_1"
-        value: "OUTPUT"
+        key: "OUTPUT_0"
+        value: "PREDICTION"
       }
     }
   ]

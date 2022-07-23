@@ -271,7 +271,7 @@ Under model_repository, run this command to start the server docker container:
     
 -- Why do we do this again? Just to this onece with the ports and life would be easier ...
 ```bash
-    docker run --runtime=nvidia -it --rm -p8000:8000 -p8001:8001 -p8002:8002 -v$(pwd):/workspace/ -v/$(pwd)/model_repository:/models nvcr.io/nvidia/tritonserver:22.06-py3 bash
+    docker run --runtime=nvidia -it --shm-size=1gb --rm -p8000:8000 -p8001:8001 -p8002:8002 -v$(pwd):/workspace/ -v/$(pwd)/model_repository:/models nvcr.io/nvidia/tritonserver:22.06-py3 bash
     pip install numpy pillow torchvision
     tritonserver --model-repository=/models
 ```
@@ -280,12 +280,26 @@ Under model_repository, run this command to start the server docker container:
 Under python_backend/examples/resnet50_trt, run the commands below to start the client Docker container:
 
     $ wget https://raw.githubusercontent.com/triton-inference-server/server/main/qa/images/mug.jpg -O "mug.jpg"
-    $ docker run --rm --net=host -v $(pwd):/workspace/ nvcr.io/nvidia/tritonserver:xx.yy-py3-sdk python client.py --image mug.jpg 
+    $ docker run --rm --net=host -v $(pwd):/workspace/ nvcr.io/nvidia/tritonserver:22.06-py3-sdk python client.py --image mug.jpg 
     $ The result of classification is:COFFEE MUG    
 
 Here, since we input an image of "mug" and the inference result is "COFFEE MUG" which is correct.
 
+If you want to play around with the postprocessing in order to convince yourself that it actually works you can change the postprocessing function to return a static value. 
+```
+    def execute(self, requests):
+        responses = []
+        for request in requests:
+            in_0 = pb_utils.get_input_tensor_by_name(request, "INPUT_0")
+            img = in_0.as_numpy()
+            out_tensor_0 = pb_utils.Tensor("OUTPUT_0", img.astype(self.output0_dtype))
+            inference_response = pb_utils.InferenceResponse(
+                output_tensors=[out_tensor_0])
+            responses.append(inference_response)
 
+        return responses
+```
+which will return the class `TENCH` as expected, check the [labels](/model_repository/resnet50_trt/labels.txt) where the first class is `TENCH`.
 
 # What is triton?
 

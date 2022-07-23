@@ -73,7 +73,7 @@ class TritonPythonModel:
         self.output0_dtype = pb_utils.triton_string_to_numpy(
             output0_config['data_type'])
 
-    def execute(self, requests: List[pb_utils.InferenceRequest]) -> List[pb_utils.InferenceResponse]:
+    def execute(self, requests):
         """`execute` MUST be implemented in every Python model. `execute`
         function receives a list of pb_utils.InferenceRequest as the only
         argument. This function is called when an inference request is made
