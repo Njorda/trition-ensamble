@@ -269,9 +269,9 @@ Set the arguments for enabling fp16 precision --fp16. To enable dynamic shapes u
 
 Under model_repository, run this command to start the server docker container:
     
--- Why do we do this again? Just to this onece with the ports and life would be easier ...
+
 ```bash
-    docker run --runtime=nvidia -it --rm -p8000:8000 -p8001:8001 -p8002:8002 -v$(pwd):/workspace/ -v/$(pwd)/model_repository:/models nvcr.io/nvidia/tritonserver:22.06-py3 bash
+    docker run --runtime=nvidia -it --rm --shm-size 1gb -p8000:8000 -p8001:8001 -p8002:8002 -v$(pwd):/workspace/ -v/$(pwd)/model_repository:/models nvcr.io/nvidia/tritonserver:22.06-py3 bash
     pip install numpy pillow torchvision
     tritonserver --model-repository=/models
 ```
