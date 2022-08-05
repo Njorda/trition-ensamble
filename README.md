@@ -279,9 +279,11 @@ Under model_repository, run this command to start the server docker container:
 
 Under python_backend/examples/resnet50_trt, run the commands below to start the client Docker container:
 
-    $ wget https://raw.githubusercontent.com/triton-inference-server/server/main/qa/images/mug.jpg -O "mug.jpg"
-    $ docker run --rm --net=host -v $(pwd):/workspace/ nvcr.io/nvidia/tritonserver:22.06-py3-sdk python client.py --image mug.jpg 
-    $ The result of classification is:COFFEE MUG    
+```
+    wget https://raw.githubusercontent.com/triton-inference-server/server/main/qa/images/mug.jpg -O "mug.jpg"
+    docker run --rm --net=host -v $(pwd):/workspace/ nvcr.io/nvidia/tritonserver:22.06-py3-sdk python client.py --image mug.jpg   
+```
+ The result of classification is:COFFEE MUG  
 
 Here, since we input an image of "mug" and the inference result is "COFFEE MUG" which is correct.
 
@@ -318,4 +320,5 @@ Triton supports serving multiple libraries and optimization of these, in order t
 ## What is the python backend?
 
 Triton includes a variety of tools, the python backend allows for combining python code with the Triton sever without having to interact with the c code (Triton is written in c) it self. Allowing for easier interactions with the triton sever without having to use GRPC or HTTP. 
+
 
