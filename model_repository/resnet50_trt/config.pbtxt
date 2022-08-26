@@ -43,3 +43,4 @@ output[
     label_filename: "labels.txt"
 }
 ]
+version_policy: { latest: { num_versions: 1}}

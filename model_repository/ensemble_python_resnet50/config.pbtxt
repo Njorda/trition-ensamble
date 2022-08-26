@@ -82,3 +82,4 @@ ensemble_scheduling {
     }
   ]
 }
+version_policy: { latest: { num_versions: 1}}

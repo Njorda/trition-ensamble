@@ -322,3 +322,94 @@ Triton supports serving multiple libraries and optimization of these, in order t
 Triton includes a variety of tools, the python backend allows for combining python code with the Triton sever without having to interact with the c code (Triton is written in c) it self. Allowing for easier interactions with the triton sever without having to use GRPC or HTTP. 
 
 
+# How to update the deployed model. 
+
+
+### How to check what is deployed
+
+```bash
+curl -g -6 -X POST  http://localhost:8000/v2/repository/models/index
+```
+
+###
+
+To deloy the models with explicit instead of poll(when we put in the whole folder). 
+
+```
+tritonserver --model-repository=/models --model-control-mode=explicit
+```
+This way no models are loaded, instead you need to use the API to specifically load these models of interest. This can be done: 
+
+
+```bash
+curl -g -6 -X POST http://localhost:8000/v2/repository/models/ensemble_python_resnet50/load
+```
+
+Once a model is loaded we can check the index again and see what is ready and not. 
+
+
+```bash
+curl -g -6 -X POST http://localhost:8000/v2/repository/models/index
+[{"name":"ensemble_python_resnet50","version":"1","state":"READY"},{"name":"postprocessing","version":"1","state":"READY"},{"name":"preprocessing","version":"1","state":"READY"},{"name":"resnet50_trt","version":"1","state":"READY"}]
+```
+
+All models are ready. In order to unload one model we can do: 
+
+```bash
+curl -g -6 -X POST http://localhost:8000/v2/repository/models/ensemble_python_resnet50/unload
+```
+
+```bash
+curl -g -6 -X POST http://localhost:8000/v2/repository/models/index
+[{"name":"ensemble_python_resnet50","version":"1","state":"UNAVAILABLE","reason":"unloaded"},{"name":"postprocessing","version":"1","state":"READY"},{"name":"preprocessing","version":"1","state":"READY"},{"name":"resnet50_trt","version":"1","state":"READY"}]
+```
+
+### Version deployed
+
+In order to achieve zero down time deployments we also need [this](https://github.com/triton-inference-server/server/blob/main/docs/model_configuration.md#version-policy). It will make it possible to set the config to just upload the latest version.
+
+In order to load the 'n' latest models for inference we will set the following in the model configurations(config.pbtxt files):
+
+```
+version_policy: { latest: { num_versions: 1}}
+```
+
+After adding a new version on s3 (or your local storage) an new load has to be triggered to reload. 
+
+Then the new models are ready to be served, this also seems to result in zero down time during serving, switching over to the latest model(if set by the client). 
+
+After the index will look like this(based upon the example). 
+
+```bash
+curl -g -6 -X POST http://localhost:8000/v2/repository/models/index
+[{"name":"ensemble_python_resnet50","version":"1","state":"UNAVAILABLE","reason":"unloaded"},{"name":"ensemble_python_resnet50","version":"2","state":"READY"},{"name":"postprocessing","version":"1","state":"UNAVAILABLE","reason":"unloaded"},{"name":"postprocessing","version":"2","state":"READY"},{"name":"preprocessing","version":"1","state":"UNAVAILABLE","reason":"unloaded"},{"name":"preprocessing","version":"2","state":"READY"},{"name":"resnet50_trt","version":"1","state":"UNAVAILABLE","reason":"unloaded"},{"name":"resnet50_trt","version":"2","state":"READY"}]
+```
+
+
+### Access from s3
+
+```
+export AWS_ACCESS_KEY_ID=''
+export AWS_SECERET_ACCESS_KEY=''
+export AWS_SESSION_TOKEN=''
+export AWS_DEFAULT_REGION=''
+```
+
+I first missed the region and then got: 
+
+```
+I0826 14:05:42.177942 996 server.cc:254] No server context available. Exiting immediately.
+error: creating server: Internal - Could not get MetaData for bucket with name niklas-test-ml-vision due to exception: , error message: No response body.
+```
+
+To run Triton fetching the models from s3 run: 
+```
+tritonserver --model-repository=s3://niklas-test-ml-vision/model_repository --model-control-mode=explicit
+```
+
+A trick is that `s3` dont upload empty folders but, the ensemble needs to have a version folder as well. If it is not created it will not work. Example error below.
+
+```
+failed to load model 'ensemble_python_resnet50': at least one version must be available under the version policy of model 'ensemble_python_resnet50'
+```
+
