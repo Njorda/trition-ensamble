@@ -241,7 +241,7 @@ Triton expects the models to be version within the model repository with an incr
 Run onnx_exporter.py to convert ResNet50 PyTorch model to ONNX format. Width and height dims are fixed at 224 but dynamic axes arguments for dynamic batching are used. Commands from the 2. and 3. subsections shall be executed within this Docker container.
 
 ```bash
-    docker run -it --runtime=nvidia -v $(pwd):/workspace nvcr.io/nvidia/pytorch:22.06-py3 bash
+    docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v $(pwd):/workspace nvcr.io/nvidia/pytorch:22.06-py3 bash
     pip install numpy pillow torchvision
     python onnx_exporter.py --save model.onnx
 ```
@@ -256,6 +256,8 @@ Run onnx_exporter.py to convert ResNet50 PyTorch model to ONNX format. Width and
     # Copy the Python model
     cp preprocessing.py model_repository/preprocessing/1/model.py
     cp postprocessing.py model_repository/postprocessing/1/model.py
+    # Copy the restnet model
+    cp model.onnx model_repository/resnet50_trt/1/model.onnx
 ```
 
 **3. Build a TensorRT engine for the ONNX model**
